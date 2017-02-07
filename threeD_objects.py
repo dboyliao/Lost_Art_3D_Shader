@@ -10,7 +10,7 @@ class Vertex(object):
 
     def __repr__(self):
 
-        return "loc: ({0.x}, {0.y}, {0.z}), normal: ({0.nx}, {0.ny}, {0.nz}), color: {0.color}".format(self)
+        return "loc: ({0.x}, {0.y}, {0.z}), color: {0.color}, normal: ({0.nx}, {0.ny}, {0.nz})".format(self)
 
 class Triangle(object):
 

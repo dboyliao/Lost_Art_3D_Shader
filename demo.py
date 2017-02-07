@@ -1,94 +1,23 @@
 #!/usr/bin/env python
-#-*- coding: utf-8 -*-
-from __future__ import print_function, absolute_import
-from utils import setPixel, saveImage
-from threeD_objects import Vertex, Triangle
+# -*- coding: utf-8 -*-
+from get_cube import cube # the cube to display
 
-def make_cube(radius = 10, color = (255, 0, 0, 1)):
-    triangles = []
+# the model
+## position (relative to world origin)
+modelX, modelY, modelZ = 0.0, 0.0, 0.0
 
-    # 1st
-    triangles.append(Triangle([Vertex((-radius, -radius, radius), color, (0, 0, 1)),
-                               Vertex((-radius, radius, radius), color, (0, 0, 1)),
-                               Vertex((radius, -radius, radius), color, (0, 0, 1))]))
-    # 2nd
-    triangles.append(Triangle([Vertex((-radius, radius, radius), color, (0, 0, 1)),
-                               Vertex((radius, -radius, radius), color, (0, 0, 1)),
-                               Vertex((radius, radius, radius), color, (0, 0, 1))]))
+## scales
+modelScaleX, modelScaleY, modelScaleZ = 1.0, 1.0, 1.0
 
-    # 3rd
-    triangles.append(Triangle([Vertex((-radius, -radius, -radius), color, (0, 0, -1)),
-                               Vertex((radius, -radius, -radius), color, (0, 0, -1)),
-                               Vertex((radius, radius, -radius), color, (0, 0, -1))]))
+## pitch, yaw, roll
+## https://www.grc.nasa.gov/www/k-12/airplane/Images/rotations.gif
+modelRotateX, modelRotateY, modelRotateZ = 0.0, 0.0, 0.0
 
-    # 4th
-    triangles.append(Triangle([Vertex((-radius, -radius, -radius), color, (0, 0, -1)),
-                               Vertex((radius, radius, -radius), color, (0, 0, -1)),
-                               Vertex((-radius, radius, -radius), color, (0, 0, -1))]))
+## model origin (relative to local origin, the center of the cube)
+modelOriginX, modelOriginY, modelOriginZ = 10.0, 0.0, 10.0
 
-    # 5th
-    triangles.append(Triangle([Vertex((-radius, radius, -radius), color, (0, 1, 0)),
-                               Vertex((-radius, radius, radius), color, (0, 1, 0)),
-                               Vertex((radius, radius, -radius), color, (0, 1, 0))]))
+# the camera
+## position
+cameraX, cameraY, cameraZ = 0.0, 20.0, -20.0
 
-    # 6th
-    triangles.append(Triangle([Vertex((-radius, radius, radius), color, (0, 1, 0)),
-                               Vertex((radius, radius, -radius), color, (0, 1, 0)),
-                               Vertex((radius, radius, radius), color, (0, 1, 0))]))
-
-    # 7th
-    triangles.append(Triangle([Vertex((-radius, -radius, -radius), color, (0, -1, 0)),
-                               Vertex((radius, -radius, -radius), color, (0, -1, 0)),
-                               Vertex((-radius, -radius, radius), color, (0, -1, 0))]))
-
-    # 8th
-    triangles.append(Triangle([Vertex((-radius, -radius, radius), color, (0, -1, 0)),
-                               Vertex((radius, -radius, radius), color, (0, -1, 0)),
-                               Vertex((radius, -radius, -radius), color, (0, -1, 0))]))
-
-    # 9th
-    triangles.append(Triangle([Vertex((radius, -radius, -radius), color, (1, 0, 0)),
-                               Vertex((radius, -radius, radius), color, (1, 0, 0)),
-                               Vertex((radius, radius, -radius), color, (1, 0, 0))]))
-
-    # 10th
-    triangles.append(Triangle([Vertex((radius, -radius, radius), color, (1, 0, 0)),
-                               Vertex((radius, radius, -radius), color, (1, 0, 0)),
-                               Vertex((radius, radius, radius), color, (1, 0, 0))]))
-
-    # 11th
-    triangles.append(Triangle([Vertex((-radius, -radius, -radius), color, (-1, 0, 0)),
-                               Vertex((-radius, radius, -radius), color, (-1, 0, 0)),
-                               Vertex((-radius, -radius, radius), color, (-1, 0, 0))]))
-
-    # 12th
-    triangles.append(Triangle([Vertex((-radius, -radius, radius), color, (-1, 0, 0)),
-                               Vertex((-radius, radius, radius), color, (-1, 0, 0)),
-                               Vertex((-radius, radius, -radius), color, (-1, 0, 0))]))
-
-    return triangles
-
-cube = make_cube()
-triangle = cube[-2]
-vertex = triangle.vertices[0]
-vertex.nx, vertex.ny, vertex.nz = -0.577, -0.577, 0.577
-vertex.color = (0, 255, 255, 1)
-vertex = triangle.vertices[1]
-vertex.nx, vertex.ny, vertex.nz = -0.577, 0.577, -0.577
-vertex.color = (0, 255, 255, 1)
-vertex = triangle.vertices[2]
-vertex.nx, vertex.ny, vertex.nz = -0.577, -0.577, 0.577
-vertex.color = (0, 255, 255, 1)
-
-triangle = cube[-1]
-vertex = triangle.vertices[0]
-vertex.nx, vertex.ny, vertex.nz = -0.577, -0.577, 0.577
-vertex.color = (0, 255, 255, 1)
-vertex = triangle.vertices[1]
-vertex.nx, vertex.ny, vertex.nz = -0.577, 0.577, 0.577
-vertex.color = (0, 255, 255, 1)
-vertex = triangle.vertices[2]
-vertex.color = (0, 255, 255, 1)
-vertex.nx, vertex.ny, vertex.nz = -0.577, 0.577, -0.577
-
-
+# the light
