@@ -44,7 +44,16 @@ diffuseX = 0.0
 diffuseY = 0.0
 diffuseZ = 1.0
 
-def render(canvas):
+useDepthBuffer = True
+depthBuffer = None
+
+def render(canvas, obj_data):
+    if depthBuffer is None:
+        depthBuffer = [0 for _ in range(canvas.shape[0]*canvas.shape[1])]
+
+    # NOTE: Coordinate origin for object data (list of triangles) is at buttom left,
+    #       but it is at upper-left for OpenCV. So we'll do origin shifting here for
+    #       randering images via OpenCV.
     pass
 
 def clearCanvas(canvas, color = None):
@@ -56,16 +65,18 @@ def clearCanvas(canvas, color = None):
     else:
         canvas[:, :] = color
 
-def transformAndProject(obj_data):
+def transformAndProject(obj_data, canvas_shape):
 
-    transformed_data = [t.copy() for t in obj_data]
+    transformed_data = [triangle.copy() for triangle in obj_data]
 
+    # transformation: rotation, translation
     for i, triangle in enumerate(transformed_data):
         new_triangle = Triangle()
 
         for j, vertex in enumerate(triangle.vertices):
             new_vertex = vertex.copy()
 
+            # rotation around (modelOriginX, modelOriginY, modelOriginZ)
             new_vertex.x -= modelOriginX
             new_vertex.y -= modelOriginY
             new_vertex.z -= modelOriginZ
@@ -86,10 +97,12 @@ def transformAndProject(obj_data):
             rot_y = -sin(modelRoateZ)*new_vertex.x + cos(modelRotateZ)*new_vertex.y
             new_vertex.x, new_vertex.y = rot_x, rot_y
 
+            # translation
             new_vertex.x += modelX
             new_vertex.y += modelY
             new_vertex.z += modelZ
 
+            # oration of normals
             rot_y = cos(modelRotateX)*new_vertex.ny + sin(modelRotateX)*new_vertex.nz
             rot_z = -sin(modelRotateX)*new_vertex.ny + cos(modelRotateX)*new_vertex.nz
             new_vertex.ny, new_vertex.nz = rot_y, rot_z
@@ -105,3 +118,46 @@ def transformAndProject(obj_data):
             new_triangle.vertices[j] = new_vertex
 
         transformed_data[i] = new_triangle
+    # rotation and translation of object done.
+
+    # Compare new vertices with camera position
+    # that is, express the object in "camera space".
+    for i, triangle in enumerate(transformed_data):
+        new_triangle = Triangle()
+
+        for j, vertex in enumerate(triangle.vertices):
+            new_vertex = vertex.copy()
+            new_vertex.x -= cameraX
+            new_vertex.y -= cameraY
+            new_vertex.z -= cameraZ
+            new_triangle.vertices[j] = new_vertex
+
+        transformed_data[i] = new_triangle
+
+    # projection: from 3D to 2D
+    for i, triangle in enumerate(transformed_data):
+        new_triangle = Triangle()
+        for j, vertex in enumerate(triangle.vertices):
+            new_vertex = vertex.copy()
+            new_vertex.x /= (new_vertex.z + 100) * 0.01
+            new_vertex.y /= (new_vertex.z + 100) * 0.01
+
+            # normalize vertex coordinate unit into pixel.
+            # now new_vertex's x and y are measured in pixels.
+            # In this demo, we want it to be squared and range from -40 to 40.
+            new_vertex.x *= canvas_shape[0]/(40.0 - (-40.0))
+            new_vertex.y *= canvas_shape[0]/(40.0 - (-40.0))
+
+            # center at the center of the canvas
+            # from buttom-left --> canvas' center
+            new_vertex.x += canvas_shape[1]/2.0
+            new_vertex.y += canvas_shape[0]/2.0
+
+            new_triangle.vertices[j] = new_vertex
+
+        transformed_data[i] = new_triangle
+
+    if not useDepthBuffer:
+        z_depth_tuples = [(triangle, sum([v.z for v in triangle.vertices])/3.0) for triangle in transformed_data]
+        z_depth_tuples.sort() # in-place sort
+        transformed_data = [t[0] for t in z_depth_tuples]
